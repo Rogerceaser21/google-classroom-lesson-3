@@ -1,0 +1,1427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Google Classroom Lesson 3 — Grade 3+4</title>
+
+<!-- Fonts: Plus Jakarta Sans — Pastel Geometry preset -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+/* ============================================================
+   THEME — Pastel Geometry
+   Soft blue page bg + cream card + pill accent colors
+   ============================================================ */
+:root {
+  /* Brand colors */
+  --bg-primary: #c8d9e6;          /* soft blue page bg */
+  --card-bg:    #faf9f7;          /* warm cream card */
+  --pill-pink:     #f0b4d4;
+  --pill-mint:     #a8d4c4;
+  --pill-sage:     #5a7c6a;       /* deep green */
+  --pill-lavender: #9b8dc4;
+  --pill-violet:   #7c6aad;       /* primary accent — deep violet */
+  --pill-violet-rgb: 124, 106, 173;
+  --pill-pink-deep: #c44b8a;
+  --text-dark:  #1a1a1a;
+  --text-mute:  #6a6a6a;
+  --text-soft:  #9a9a9a;
+
+  /* Pedagogical badge colors */
+  --i-do-color:   var(--pill-violet);
+  --we-do-color:  var(--pill-sage);
+  --you-do-color: var(--pill-pink-deep);
+
+  /* Typography — Plus Jakarta Sans for everything */
+  --font-display: 'Plus Jakarta Sans', sans-serif;
+
+  /* Font scale multiplier */
+  --font-scale: 1;
+  --title-size:    calc(clamp(2rem, 6.5vw, 5rem) * var(--font-scale));
+  --h2-size:       calc(clamp(1.4rem, 3.5vw, 2.7rem) * var(--font-scale));
+  --h3-size:       calc(clamp(1rem, 2.2vw, 1.55rem) * var(--font-scale));
+  --body-size:     calc(clamp(0.85rem, 1.5vw, 1.1rem) * var(--font-scale));
+  --small-size:    calc(clamp(0.72rem, 1.1vw, 0.92rem) * var(--font-scale));
+  --label-size:    calc(clamp(0.65rem, 0.95vw, 0.8rem) * var(--font-scale));
+
+  /* Spacing */
+  --slide-padding: clamp(1rem, 2.5vw, 2.2rem);
+  --gap:           clamp(1rem, 2vw, 2rem);
+  --gap-sm:        clamp(0.5rem, 1.2vw, 1rem);
+
+  /* Animation */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --duration:      0.65s;
+}
+
+/* ============================================================
+   BASE
+   ============================================================ */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { height: 100%; overflow-x: hidden; }
+body {
+  background: var(--bg-primary);
+  color: var(--text-dark);
+  font-family: var(--font-display);
+  font-weight: 500;
+  overflow: hidden;
+}
+
+/* Slide deck container — each slide is one viewport */
+.slides-container {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+}
+.slide {
+  position: absolute;
+  inset: 0;
+  width: 100vw; height: 100vh; height: 100dvh;
+  overflow: hidden;
+  display: flex;
+  padding: var(--slide-padding);
+  opacity: 0;
+  transform: translateY(20px);
+  pointer-events: none;
+  transition:
+    opacity 0.5s var(--ease-out-expo),
+    transform 0.5s var(--ease-out-expo);
+}
+.slide.active {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+  z-index: 1;
+}
+
+/* The signature: all content lives inside a rounded cream card */
+.card-shell {
+  flex: 1;
+  background: var(--card-bg);
+  border-radius: clamp(16px, 2vw, 28px);
+  display: grid;
+  grid-template-columns: 1fr clamp(50px, 6vw, 80px);
+  box-shadow: 0 25px 60px rgba(0,0,0,0.10), 0 6px 18px rgba(0,0,0,0.05);
+  overflow: hidden;
+  max-height: 100%;
+}
+.card-content {
+  padding: clamp(1.4rem, 3.2vw, 3rem);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+  gap: var(--gap-sm);
+  position: relative;
+}
+.card-pills {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 0.7em;
+  background: rgba(124, 106, 173, 0.04);
+  padding: clamp(0.5rem, 1vw, 1rem) 0;
+}
+.cp-pill {
+  width: 60%;
+  border-radius: 999px;
+}
+.cp-pill.s { height: clamp(28px, 5vh, 50px); }
+.cp-pill.m { height: clamp(50px, 9vh, 90px); }
+.cp-pill.l { height: clamp(70px, 14vh, 130px); }
+.cp-pill.pink     { background: var(--pill-pink); }
+.cp-pill.mint     { background: var(--pill-mint); }
+.cp-pill.sage     { background: var(--pill-sage); }
+.cp-pill.lavender { background: var(--pill-lavender); }
+.cp-pill.violet   { background: var(--pill-violet); }
+
+img, .image-container {
+  max-width: 100%;
+  max-height: min(50vh, 380px);
+  object-fit: contain;
+}
+
+/* Responsive shrink */
+@media (max-height: 700px) {
+  :root {
+    --slide-padding: clamp(0.6rem, 1.8vw, 1.4rem);
+    --gap: clamp(0.6rem, 1.5vw, 1.2rem);
+  }
+}
+@media (max-height: 600px) {
+  :root {
+    --title-size: calc(clamp(1.6rem, 5vw, 3rem) * var(--font-scale));
+  }
+  .nav-dots, .card-pills { display: none; }
+  .card-shell { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.2s !important;
+  }
+}
+
+/* ============================================================
+   ANIMATIONS — staggered reveal
+   ============================================================ */
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition:
+    opacity var(--duration) var(--ease-out-expo),
+    transform var(--duration) var(--ease-out-expo);
+}
+.slide.active .reveal { opacity: 1; transform: translateY(0); }
+.reveal-left {
+  opacity: 0;
+  transform: translateX(-24px);
+  transition:
+    opacity var(--duration) var(--ease-out-expo),
+    transform var(--duration) var(--ease-out-expo);
+}
+.slide.active .reveal-left { opacity: 1; transform: translateX(0); }
+.reveal-scale {
+  opacity: 0;
+  transform: scale(0.95);
+  transition:
+    opacity var(--duration) var(--ease-out-expo),
+    transform var(--duration) var(--ease-out-expo);
+}
+.slide.active .reveal-scale { opacity: 1; transform: scale(1); }
+.d1 { transition-delay: 0.05s; }
+.d2 { transition-delay: 0.15s; }
+.d3 { transition-delay: 0.28s; }
+.d4 { transition-delay: 0.42s; }
+.d5 { transition-delay: 0.55s; }
+.d6 { transition-delay: 0.68s; }
+.d7 { transition-delay: 0.8s; }
+
+/* ============================================================
+   TITLE SLIDE — emphasize the cream-card + pills signature
+   ============================================================ */
+.title-slide .card-content { justify-content: center; }
+.title-eyebrow {
+  font-size: var(--small-size);
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--pill-violet);
+  margin-bottom: var(--gap-sm);
+}
+.title-main {
+  font-size: var(--title-size);
+  font-weight: 800;
+  line-height: 0.97;
+  letter-spacing: -0.025em;
+  color: var(--text-dark);
+  margin-bottom: var(--gap-sm);
+}
+.title-main em { font-style: normal; color: var(--pill-violet); }
+.title-sub {
+  font-size: var(--body-size);
+  color: var(--text-mute);
+  font-weight: 500;
+  line-height: 1.5;
+  margin-bottom: var(--gap);
+  max-width: 80%;
+}
+.title-cta {
+  display: inline-block;
+  background: var(--text-dark);
+  color: var(--card-bg);
+  padding: 0.7em 1.4em;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: var(--small-size);
+  align-self: flex-start;
+}
+
+/* ============================================================
+   COMMON FURNITURE
+   ============================================================ */
+.eyebrow {
+  font-size: var(--small-size);
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  color: var(--pill-violet);
+  text-transform: uppercase;
+}
+.slide-title {
+  font-size: var(--h2-size);
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  color: var(--text-dark);
+}
+.accent-line {
+  width: clamp(50px, 7vw, 100px);
+  height: 4px;
+  background: var(--pill-violet);
+  border-radius: 2px;
+  margin: 0.4em 0 0.2em;
+}
+.body-text {
+  font-size: var(--body-size);
+  color: var(--text-mute);
+  line-height: 1.5;
+  font-weight: 500;
+}
+
+/* ============================================================
+   PED BADGE — rounded pill with colored fill
+   ============================================================ */
+.ped-badge {
+  display: inline-block;
+  font-weight: 700;
+  font-size: var(--small-size);
+  letter-spacing: 0.18em;
+  padding: 0.4em 1em;
+  border-radius: 999px;
+  text-transform: uppercase;
+  align-self: flex-start;
+  color: var(--card-bg);
+}
+.ped-badge.i-do  { background: var(--i-do-color); }
+.ped-badge.we-do { background: var(--we-do-color); }
+.ped-badge.you-do{ background: var(--you-do-color); }
+
+/* ============================================================
+   WALT — bullet list
+   ============================================================ */
+.walt-list { list-style: none; display: flex; flex-direction: column; gap: var(--gap-sm); margin-top: var(--gap-sm); }
+.walt-list li {
+  font-size: var(--body-size);
+  font-weight: 500;
+  color: var(--text-dark);
+  line-height: 1.5;
+  padding-left: 1.6em;
+  position: relative;
+}
+.walt-list li::before {
+  content: '◆';
+  color: var(--pill-violet);
+  position: absolute;
+  left: 0;
+  font-size: 1em;
+}
+.walt-list li strong { color: var(--pill-violet); font-weight: 700; }
+
+/* ============================================================
+   STAR CARDS — success criteria tiers
+   ============================================================ */
+.star-grid { display: flex; flex-direction: column; gap: var(--gap-sm); margin-top: var(--gap-sm); }
+.star-card {
+  background: rgba(0,0,0,0.025);
+  border: 1.5px solid rgba(0,0,0,0.06);
+  border-left: 4px solid var(--pill-violet);
+  border-radius: 12px;
+  padding: clamp(0.7rem, 1.4vw, 1.15rem) clamp(1rem, 2vw, 1.5rem);
+}
+.star-card.s2 { border-left-color: var(--pill-sage); }
+.star-card.s3 { border-left-color: var(--you-do-color); }
+.star-label {
+  font-size: var(--small-size);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  font-weight: 700;
+  margin-bottom: 0.25em;
+  display: block;
+  color: var(--pill-violet);
+}
+.star-card.s2 .star-label { color: var(--pill-sage); }
+.star-card.s3 .star-label { color: var(--you-do-color); }
+.star-desc {
+  font-size: var(--body-size);
+  color: var(--text-dark);
+  line-height: 1.4;
+}
+.star-desc strong { color: var(--pill-violet); }
+
+/* ============================================================
+   TWO-COLUMN
+   ============================================================ */
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--gap);
+  flex: 1;
+  align-items: stretch;
+  margin-top: var(--gap-sm);
+  min-height: 0;
+}
+@media (max-width: 800px) { .two-col { grid-template-columns: 1fr; } }
+.col { display: flex; flex-direction: column; gap: var(--gap-sm); justify-content: center; min-height: 0; }
+.slide-img {
+  border-radius: 14px;
+  border: 2px solid rgba(var(--pill-violet-rgb), 0.2);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+  max-height: min(58vh, 440px);
+}
+
+/* ============================================================
+   STEP CARDS
+   ============================================================ */
+.step-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+  gap: var(--gap-sm);
+  margin-top: var(--gap-sm);
+}
+.step-card {
+  background: var(--card-bg);
+  border: 1.5px solid rgba(var(--pill-violet-rgb), 0.15);
+  border-left: 4px solid var(--pill-violet);
+  border-radius: 12px;
+  padding: clamp(0.85rem, 1.5vw, 1.3rem);
+  display: flex;
+  flex-direction: column;
+  gap: 0.4em;
+}
+.step-icon { font-size: clamp(1.5rem, 2.6vw, 2.1rem); line-height: 1; }
+.step-num {
+  font-weight: 800;
+  font-size: var(--h3-size);
+  color: var(--pill-violet);
+}
+.step-title {
+  font-weight: 700;
+  font-size: var(--h3-size);
+  color: var(--text-dark);
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+.step-body {
+  font-size: var(--small-size);
+  color: var(--text-mute);
+  line-height: 1.4;
+}
+.step-card.highlight {
+  border-left-color: var(--pill-pink-deep);
+  background: linear-gradient(155deg, rgba(240, 180, 212, 0.18), var(--card-bg));
+}
+.step-card.we-do  { border-left-color: var(--pill-sage); }
+.step-card.we-do .step-num { color: var(--pill-sage); }
+.step-card.you-do { border-left-color: var(--you-do-color); }
+
+/* ============================================================
+   MISSION CARDS
+   ============================================================ */
+.mission-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  gap: var(--gap-sm);
+  margin-top: var(--gap-sm);
+}
+.mission-card {
+  background: var(--card-bg);
+  border: 1.5px solid rgba(196, 75, 138, 0.18);
+  border-radius: 14px;
+  padding: clamp(0.85rem, 1.5vw, 1.25rem);
+  display: flex;
+  flex-direction: column;
+  gap: 0.4em;
+  position: relative;
+}
+.mission-stars {
+  font-size: var(--small-size);
+  letter-spacing: 0.1em;
+  color: var(--you-do-color);
+  font-weight: 700;
+}
+.mission-title {
+  font-weight: 800;
+  font-size: var(--h3-size);
+  color: var(--text-dark);
+  letter-spacing: -0.01em;
+}
+.mission-body {
+  font-size: var(--small-size);
+  color: var(--text-mute);
+  line-height: 1.4;
+}
+.mission-time {
+  font-size: var(--label-size);
+  color: var(--pill-violet);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 700;
+  margin-top: auto;
+  padding-top: 0.4em;
+}
+
+/* ============================================================
+   CALLOUT
+   ============================================================ */
+.callout {
+  background: linear-gradient(90deg, rgba(var(--pill-violet-rgb), 0.10), rgba(var(--pill-violet-rgb), 0.02));
+  border: 1.5px solid rgba(var(--pill-violet-rgb), 0.25);
+  border-left: 4px solid var(--pill-violet);
+  border-radius: 10px;
+  padding: clamp(0.7rem, 1.3vw, 1rem) clamp(1rem, 2vw, 1.4rem);
+  font-weight: 500;
+  font-size: var(--small-size);
+  color: var(--text-dark);
+  line-height: 1.5;
+  margin-top: auto;
+}
+.callout.we-do {
+  border-left-color: var(--pill-sage);
+  background: linear-gradient(90deg, rgba(90, 124, 106, 0.12), rgba(168, 212, 196, 0.06));
+}
+.callout strong { color: var(--pill-violet); font-weight: 700; }
+.callout.we-do strong { color: var(--pill-sage); }
+
+/* ============================================================
+   KEYBOARD KEYS
+   ============================================================ */
+.kbd-row { display: flex; flex-wrap: wrap; gap: 0.6em; align-items: center; margin-top: 0.5em; }
+.kbd-block { display: flex; align-items: center; gap: 0.45em; }
+.kbd {
+  display: inline-block;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--body-size);
+  background: var(--text-dark);
+  color: var(--card-bg);
+  padding: 0.3em 0.7em;
+  border-radius: 6px;
+  letter-spacing: 0.05em;
+  box-shadow: 0 3px 0 var(--pill-violet);
+}
+.kbd-label {
+  font-size: var(--small-size);
+  color: var(--text-mute);
+  font-weight: 500;
+}
+
+/* ============================================================
+   PROGRESS BAR + NAV DOTS + COUNTER
+   ============================================================ */
+.progress-bar-wrap {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%;
+  height: 3px;
+  background: rgba(0,0,0,0.05);
+  z-index: 100;
+}
+.progress-bar-fill {
+  height: 100%;
+  background: var(--pill-violet);
+  width: 0%;
+  transition: width 0.4s var(--ease-out-expo);
+}
+.nav-dots {
+  position: fixed;
+  right: clamp(0.6rem, 1.4vw, 1.2rem);
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 0.55em;
+  z-index: 200;
+}
+.nav-dots button {
+  width: 9px; height: 9px;
+  border-radius: 50%;
+  border: 1.5px solid var(--pill-violet);
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.25s ease;
+}
+.nav-dots button:hover { background: rgba(var(--pill-violet-rgb), 0.4); }
+.nav-dots button.active { background: var(--pill-violet); transform: scale(1.4); }
+.slide-counter {
+  position: fixed;
+  bottom: clamp(0.8rem, 2vh, 1.5rem);
+  right: clamp(1rem, 2.5vw, 2rem);
+  font-size: var(--small-size);
+  color: var(--text-soft);
+  letter-spacing: 0.1em;
+  z-index: 200;
+  font-weight: 600;
+}
+
+/* ============================================================
+   FONT SCALE + FULLSCREEN PILL
+   ============================================================ */
+.font-scale-ctrl {
+  position: fixed;
+  bottom: clamp(0.8rem, 2vh, 1.5rem);
+  left: clamp(1rem, 2.5vw, 2rem);
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  z-index: 1000;
+  background: var(--card-bg);
+  border: 1.5px solid rgba(var(--pill-violet-rgb), 0.25);
+  border-radius: 8px;
+  padding: 0.28em 0.45em;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+}
+.font-scale-ctrl button {
+  background: none;
+  border: none;
+  color: var(--text-mute);
+  font-family: var(--font-display);
+  font-size: clamp(0.6rem, 0.85vw, 0.72rem);
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0.2em 0.45em;
+  border-radius: 4px;
+  transition: color 0.15s, background 0.15s;
+  line-height: 1;
+}
+.font-scale-ctrl button:hover { color: var(--pill-violet); background: rgba(var(--pill-violet-rgb), 0.1); }
+.font-scale-ctrl button:active { transform: scale(0.92); }
+.font-scale-ctrl button:disabled { opacity: 0.3; cursor: default; }
+#fontScaleLabel {
+  font-size: clamp(0.55rem, 0.8vw, 0.68rem);
+  color: var(--text-mute);
+  min-width: 2.8em;
+  text-align: center;
+  letter-spacing: 0.04em;
+  user-select: none;
+  font-weight: 600;
+}
+.font-scale-ctrl .ctrl-divider {
+  width: 1px;
+  height: 1em;
+  background: rgba(var(--pill-violet-rgb), 0.3);
+  margin: 0 4px;
+}
+.font-scale-ctrl .fs-btn {
+  font-size: clamp(0.7rem, 1vw, 0.85rem);
+  padding: 0.15em 0.4em;
+}
+
+/* ============================================================
+   CURSOR EFFECTS CANVAS
+   ============================================================ */
+#cursorFx {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* ============================================================
+   INLINE EDITING
+   ============================================================ */
+.edit-hotzone {
+  position: fixed;
+  top: 0; left: 0;
+  width: 80px; height: 80px;
+  z-index: 10000;
+  cursor: pointer;
+}
+.edit-toggle {
+  position: fixed;
+  top: clamp(0.8rem, 2vh, 1.5rem);
+  left: clamp(1rem, 2.5vw, 2rem);
+  z-index: 10001;
+  background: var(--card-bg);
+  color: var(--pill-violet);
+  border: 1.5px solid var(--pill-violet);
+  border-radius: 50%;
+  width: 44px; height: 44px;
+  font-size: 1.05rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+.edit-toggle.show, .edit-toggle.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+.edit-toggle.active { background: var(--pill-violet); color: var(--card-bg); }
+.edit-banner {
+  position: fixed;
+  top: clamp(0.8rem, 2vh, 1.5rem);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10001;
+  background: var(--pill-violet);
+  color: var(--card-bg);
+  font-size: var(--small-size);
+  font-weight: 700;
+  padding: 0.5em 1.2em;
+  border-radius: 999px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+.edit-banner.active { opacity: 1; }
+body.edit-active [contenteditable="true"] {
+  outline: 1.5px dashed rgba(var(--pill-violet-rgb), 0.5);
+  outline-offset: 4px;
+  cursor: text;
+}
+body.edit-active [contenteditable="true"]:focus {
+  outline: 2px solid var(--pill-violet);
+  background: rgba(var(--pill-violet-rgb), 0.08);
+}
+</style>
+</head>
+<body>
+
+<!-- Progress bar -->
+<div class="progress-bar-wrap"><div class="progress-bar-fill" id="progressFill"></div></div>
+
+<!-- Navigation dots -->
+<nav class="nav-dots" id="navDots" aria-label="Slide navigation"></nav>
+
+<!-- Slide counter -->
+<div class="slide-counter" id="slideCounter">1 / 10</div>
+
+<!-- Cursor effects canvas -->
+<canvas id="cursorFx" aria-hidden="true"></canvas>
+
+<!-- Font scale + fullscreen pill -->
+<div class="font-scale-ctrl" id="fontScaleCtrl" aria-label="Display controls">
+  <button id="fontScaleDown" aria-label="Decrease font size" title="Smaller (⌘ ,)">A−</button>
+  <span id="fontScaleLabel">100%</span>
+  <button id="fontScaleUp"   aria-label="Increase font size" title="Larger (⌘ .)">A+</button>
+  <span class="ctrl-divider" aria-hidden="true"></span>
+  <button id="fullscreenBtn" class="fs-btn" aria-label="Enter fullscreen" title="Fullscreen (⌘ F)">⛶</button>
+</div>
+
+<!-- Inline editing -->
+<div class="edit-hotzone" aria-hidden="true"></div>
+<button class="edit-toggle" id="editToggle" title="Edit mode (E)">✏️</button>
+<div class="edit-banner" id="editBanner">Edit mode — click any text. ⌘S to save</div>
+
+<div class="slides-container" id="slidesContainer">
+
+  <!-- ============================================================
+       SLIDE 1: TITLE
+       ============================================================ -->
+  <section class="slide title-slide active" data-slide="1" aria-label="Title slide">
+    <div class="card-shell">
+      <div class="card-content">
+        <span class="title-eyebrow reveal d1">Lesson 3 · Grade 3+4</span>
+        <h1 class="title-main reveal d2">Slides, Sharing<br>&amp; <em>Solving Problems</em></h1>
+        <p class="title-sub reveal d3">Google Classroom &amp; Slides — second 30-min session.<br>Make a slide. Add a picture. Share it on Meet. Fix a problem like a pro.</p>
+        <span class="title-cta reveal d4">Today's Mission →</span>
+      </div>
+      <div class="card-pills">
+        <div class="cp-pill s pink reveal d3"></div>
+        <div class="cp-pill m mint reveal d4"></div>
+        <div class="cp-pill l sage reveal d5"></div>
+        <div class="cp-pill m lavender reveal d6"></div>
+        <div class="cp-pill s violet reveal d7"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       SLIDE 2: WALT
+       ============================================================ -->
+  <section class="slide" data-slide="2" aria-label="Learning intentions">
+    <div class="card-shell">
+      <div class="card-content">
+        <span class="eyebrow reveal d1">WALT</span>
+        <h2 class="slide-title reveal d2">What Are We Learning Today?</h2>
+        <div class="accent-line reveal d3"></div>
+
+        <ul class="walt-list">
+          <li class="reveal d3">Edit text and <strong>add pictures</strong> to a Google Slides presentation in three different ways.</li>
+          <li class="reveal d4">Use <strong>Google Meet</strong> to share your screen and share links in the chatbox.</li>
+          <li class="reveal d5">Use <strong>Think, Try, Ask</strong> to solve common tech problems before asking for help.</li>
+        </ul>
+      </div>
+      <div class="card-pills">
+        <div class="cp-pill s pink"></div>
+        <div class="cp-pill m violet"></div>
+        <div class="cp-pill s mint"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       SLIDE 3: SUCCESS CRITERIA
+       ============================================================ -->
+  <section class="slide" data-slide="3" aria-label="Success criteria">
+    <div class="card-shell">
+      <div class="card-content">
+        <span class="eyebrow reveal d1">Success Criteria</span>
+        <h2 class="slide-title reveal d2">How will you know you've succeeded?</h2>
+        <div class="accent-line reveal d3"></div>
+
+        <div class="star-grid">
+          <div class="star-card s1 reveal d3">
+            <span class="star-label">★ Getting Started</span>
+            <p class="star-desc">I can open the Slides template from Classroom, add my name on Slide 1, and insert one image from the web.</p>
+          </div>
+          <div class="star-card s2 reveal d4">
+            <span class="star-label">★★ Levelling Up</span>
+            <p class="star-desc">I can insert images three different ways (web, device, camera) and share my screen on Google Meet.</p>
+          </div>
+          <div class="star-card s3 reveal d5">
+            <span class="star-label">★★★ Going Further</span>
+            <p class="star-desc">I can solve a tech problem on my own using <strong>Think, Try, Ask</strong> before raising my hand for help.</p>
+          </div>
+        </div>
+      </div>
+      <div class="card-pills">
+        <div class="cp-pill s violet"></div>
+        <div class="cp-pill m sage"></div>
+        <div class="cp-pill l pink"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       SLIDE 4: EDITING GOOGLE SLIDES (I DO) — V6 slide 10
+       Speaker note: I Do Part B - Step 1: Opening & editing Google Slides.
+       ============================================================ -->
+  <section class="slide" data-slide="4" aria-label="Editing Google Slides">
+    <div class="card-shell">
+      <div class="card-content">
+        <span class="ped-badge i-do reveal d1">I Do</span>
+        <h2 class="slide-title reveal d2">Editing Google Slides</h2>
+        <div class="accent-line reveal d3"></div>
+        <p class="body-text reveal d3">Learn to create and describe content in Google Slides.</p>
+
+        <div class="two-col">
+          <div class="col">
+            <div class="step-grid" style="grid-template-columns: 1fr;">
+              <div class="step-card reveal d4">
+                <span class="step-icon">📂</span>
+                <span class="step-title">Open from Classroom</span>
+                <p class="step-body">Click the Google Slides template attached to the assignment.</p>
+              </div>
+              <div class="step-card reveal d5">
+                <span class="step-icon">✏️</span>
+                <span class="step-title">Edit text</span>
+                <p class="step-body">Click a text box, delete the placeholder text, and type your own.</p>
+              </div>
+              <div class="step-card reveal d6">
+                <span class="step-icon">🎨</span>
+                <span class="step-title">Change font &amp; colour</span>
+                <p class="step-body">Highlight text, then change size and colour from the toolbar.</p>
+              </div>
+            </div>
+          </div>
+          <div class="col reveal-scale d4">
+            <img src="assets/editing-slides.jpg" alt="Editing a Google Slides template" class="slide-img">
+          </div>
+        </div>
+
+        <div class="callout reveal d7">
+          💡 <strong>Teacher says:</strong> "You are going to create your own content on these slides today."
+        </div>
+      </div>
+      <div class="card-pills">
+        <div class="cp-pill m violet"></div>
+        <div class="cp-pill s mint"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       SLIDE 5: ADDING PICTURES 3 WAYS (I DO) — V6 slide 11
+       Speaker note: Demonstrate each method live. CFU (Show Call): "Watch how I resize. Why the corner and not the side?"
+       ============================================================ -->
+  <section class="slide" data-slide="5" aria-label="Adding pictures 3 ways">
+    <div class="card-shell">
+      <div class="card-content">
+        <span class="ped-badge i-do reveal d1">I Do</span>
+        <h2 class="slide-title reveal d2">Adding Pictures: 3 Methods</h2>
+        <div class="accent-line reveal d3"></div>
+
+        <div class="two-col">
+          <div class="col">
+            <div class="step-grid" style="grid-template-columns: 1fr;">
+              <div class="step-card reveal d3">
+                <span class="step-icon">🌐</span>
+                <span class="step-title">From the Web</span>
+                <p class="step-body"><strong style="color: var(--pill-violet);">Insert &gt; Image &gt; Search the web</strong><br>Only use school-appropriate images!</p>
+              </div>
+              <div class="step-card reveal d4">
+                <span class="step-icon">💾</span>
+                <span class="step-title">From Your Device</span>
+                <p class="step-body"><strong style="color: var(--pill-violet);">Insert &gt; Image &gt; Upload from computer</strong><br>Find the file in your Downloads folder.</p>
+              </div>
+              <div class="step-card reveal d5">
+                <span class="step-icon">📷</span>
+                <span class="step-title">From Your Camera</span>
+                <p class="step-body"><strong style="color: var(--pill-violet);">Insert &gt; Image &gt; Camera</strong><br>Great for photographing your own work!</p>
+              </div>
+            </div>
+          </div>
+          <div class="col reveal-scale d4">
+            <img src="assets/adding-pictures.jpg" alt="Adding pictures to slides" class="slide-img">
+          </div>
+        </div>
+      </div>
+      <div class="card-pills">
+        <div class="cp-pill s pink"></div>
+        <div class="cp-pill m violet"></div>
+        <div class="cp-pill s mint"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       SLIDE 6: YOUR TURN — SLIDES & IMAGES (WE DO) — V6 slide 12
+       Speaker note: We Do Part B (7 min). Timer on screen.
+       CFU (Standardise the Format): "Hold your device up and show me Slide 2 with the inserted image."
+       ============================================================ -->
+  <section class="slide" data-slide="6" aria-label="Your turn slides and images">
+    <div class="card-shell">
+      <div class="card-content">
+        <span class="ped-badge we-do reveal d1">We Do</span>
+        <h2 class="slide-title reveal d2">Your Turn: Slides &amp; Images</h2>
+        <div class="accent-line reveal d3" style="background: var(--pill-sage);"></div>
+
+        <div class="step-grid">
+          <div class="step-card we-do reveal d3">
+            <span class="step-num">1</span>
+            <p class="step-body">Open the Google Slides template from the assignment in Classroom.</p>
+          </div>
+          <div class="step-card we-do reveal d4">
+            <span class="step-num">2</span>
+            <p class="step-body"><strong style="color: var(--text-dark);">Slide 1:</strong> Delete the placeholder text. Type your name and today's date.</p>
+          </div>
+          <div class="step-card we-do reveal d5">
+            <span class="step-num">3</span>
+            <p class="step-body"><strong style="color: var(--text-dark);">Slide 2:</strong> Insert an image from the web on our topic. <strong style="color: var(--pill-pink-deep);">90 seconds!</strong></p>
+          </div>
+          <div class="step-card we-do reveal d6">
+            <span class="step-num">4</span>
+            <p class="step-body"><strong style="color: var(--text-dark);">Slide 3:</strong> Take a photo with your camera and insert it. School-appropriate!</p>
+          </div>
+        </div>
+
+        <div class="callout we-do reveal d7">
+          🗣️ <strong>Turn &amp; Talk:</strong> Uploading vs web search — which would you use for a photo of your pet?
+        </div>
+      </div>
+      <div class="card-pills">
+        <div class="cp-pill s sage"></div>
+        <div class="cp-pill l mint"></div>
+        <div class="cp-pill s sage"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       SLIDE 7: SHARING SCREEN ON GOOGLE MEET (I DO) — V6 slide 13
+       Speaker note: I Do Part C - Step 1: Screen sharing. Reassure: sharing only lets others SEE, not control.
+       ============================================================ -->
+  <section class="slide" data-slide="7" aria-label="Sharing screen on Google Meet">
+    <div class="card-shell">
+      <div class="card-content">
+        <span class="ped-badge i-do reveal d1">I Do</span>
+        <h2 class="slide-title reveal d2">Sharing Your Screen on Google Meet</h2>
+        <div class="accent-line reveal d3"></div>
+        <p class="body-text reveal d3">Use Google Meet features to communicate with your class.</p>
+
+        <div class="two-col">
+          <div class="col">
+            <div class="step-grid" style="grid-template-columns: 1fr 1fr;">
+              <div class="step-card reveal d3">
+                <span class="step-num">1</span>
+                <span class="step-title">Click 'Present now'</span>
+                <p class="step-body">Find the button at the bottom of Google Meet.</p>
+              </div>
+              <div class="step-card reveal d4">
+                <span class="step-num">2</span>
+                <span class="step-title">Choose what to share</span>
+                <p class="step-body">Select <strong style="color: var(--pill-violet);">'A tab'</strong> or <strong style="color: var(--pill-violet);">'Your entire screen'</strong>.</p>
+              </div>
+              <div class="step-card reveal d5">
+                <span class="step-num">3</span>
+                <span class="step-title">Show your work</span>
+                <p class="step-body">Your classmates can now see your screen!</p>
+              </div>
+              <div class="step-card reveal d6">
+                <span class="step-num">4</span>
+                <span class="step-title">Stop sharing</span>
+                <p class="step-body">Click 'Stop sharing' when you're done.</p>
+              </div>
+            </div>
+          </div>
+          <div class="col reveal-scale d4">
+            <img src="assets/screenshare.jpg" alt="Sharing your screen on Google Meet" class="slide-img">
+          </div>
+        </div>
+      </div>
+      <div class="card-pills">
+        <div class="cp-pill m violet"></div>
+        <div class="cp-pill s lavender"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       SLIDE 8: CHATBOX & LINKS (I DO) — V6 slide 14
+       Speaker note: Demo type message, paste link. Model Ctrl+C / Ctrl+V.
+       CFU (Call and Response): "Copy!" [Ctrl+C!] "Paste!" [Ctrl+V!] (TLAC #35)
+       ============================================================ -->
+  <section class="slide" data-slide="8" aria-label="Using the chatbox and links">
+    <div class="card-shell">
+      <div class="card-content">
+        <span class="ped-badge i-do reveal d1">I Do</span>
+        <h2 class="slide-title reveal d2">Using the Chatbox &amp; Links</h2>
+        <div class="accent-line reveal d3"></div>
+
+        <div class="step-grid" style="grid-template-columns: 1fr 1fr;">
+          <div class="step-card highlight reveal d3">
+            <span class="step-icon">💬</span>
+            <span class="step-title">The Chatbox</span>
+            <p class="step-body">Open the chat panel in Google Meet. Type messages and share links with the class.</p>
+            <p class="step-body" style="margin-top: 0.4em; color: var(--pill-pink-deep);"><strong>Rules:</strong> School messages only. No personal chats or silly comments!</p>
+          </div>
+          <div class="step-card reveal d4">
+            <span class="step-icon">🔗</span>
+            <span class="step-title">Copy &amp; Paste Links</span>
+            <div class="kbd-row">
+              <div class="kbd-block"><span class="kbd">Ctrl</span><span style="color: var(--text-soft);">+</span><span class="kbd">C</span><span class="kbd-label">= Copy</span></div>
+            </div>
+            <div class="kbd-row">
+              <div class="kbd-block"><span class="kbd">Ctrl</span><span style="color: var(--text-soft);">+</span><span class="kbd">V</span><span class="kbd-label">= Paste</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout reveal d6">
+          🎯 <strong>Call &amp; Response:</strong> Teacher says "Copy!" → Students say "Ctrl + C!"   |   Teacher says "Paste!" → Students say "Ctrl + V!"
+        </div>
+      </div>
+      <div class="card-pills">
+        <div class="cp-pill s pink"></div>
+        <div class="cp-pill m violet"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       SLIDE 9: THINK, TRY, ASK (I DO) — V6 slide 15
+       Speaker note: Problem-solving framework. Teacher deliberately causes a "problem" and models Think, Try, Ask aloud.
+       Building Ratio: partner discussion, then cold call.
+       ============================================================ -->
+  <section class="slide" data-slide="9" aria-label="Think Try Ask">
+    <div class="card-shell">
+      <div class="card-content">
+        <span class="ped-badge i-do reveal d1">I Do</span>
+        <h2 class="slide-title reveal d2">Problem Solving: Think, Try, Ask</h2>
+        <div class="accent-line reveal d3"></div>
+        <p class="body-text reveal d3">A strategy for when something goes wrong.</p>
+
+        <div class="step-grid">
+          <div class="step-card reveal-left d3">
+            <span class="step-icon">🧠</span>
+            <span class="step-title" style="color: var(--pill-violet);">Think</span>
+            <p class="step-body"><strong style="color: var(--text-dark);">What is the problem?</strong><br>Read the error message. Look at what happened.</p>
+          </div>
+          <div class="step-card we-do reveal-left d4">
+            <span class="step-icon">🔧</span>
+            <span class="step-title" style="color: var(--pill-sage);">Try</span>
+            <p class="step-body"><strong style="color: var(--text-dark);">Can I fix it myself?</strong><br>Refresh the page. Check the internet. Try again.</p>
+          </div>
+          <div class="step-card you-do reveal-left d5">
+            <span class="step-icon">✋</span>
+            <span class="step-title" style="color: var(--you-do-color);">Ask</span>
+            <p class="step-body"><strong style="color: var(--text-dark);">Tried twice and still stuck?</strong><br>Raise my hand and ask for help.</p>
+          </div>
+        </div>
+
+        <div class="callout reveal d6">
+          🗣️ What would you do if your screen went blank during an online lesson? <strong>Discuss with your partner.</strong>
+        </div>
+      </div>
+      <div class="card-pills">
+        <div class="cp-pill s violet"></div>
+        <div class="cp-pill m sage"></div>
+        <div class="cp-pill s pink"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       SLIDE 10: MISSION CHALLENGE (YOU DO) — V6 slide 16
+       Speaker note: You Do (12 min). Students work independently with partner support.
+       Teacher circulates with clipboard (TLAC #13).
+       ============================================================ -->
+  <section class="slide" data-slide="10" aria-label="Mission Challenge">
+    <div class="card-shell">
+      <div class="card-content">
+        <span class="ped-badge you-do reveal d1">You Do</span>
+        <h2 class="slide-title reveal d2">🚀 Mission Challenge</h2>
+        <div class="accent-line reveal d3" style="background: var(--you-do-color);"></div>
+
+        <div class="mission-grid">
+          <div class="mission-card reveal d3">
+            <span class="mission-stars">★ Mission 1</span>
+            <span class="mission-title">Find it</span>
+            <p class="mission-body">Sign in. Open Classroom. Find the 'Slides Mission' assignment. Check it says <strong style="color: var(--pill-violet);">'Assigned'</strong>.</p>
+            <span class="mission-time">⏱ 3 min</span>
+          </div>
+          <div class="mission-card reveal d4">
+            <span class="mission-stars">★★ Mission 2</span>
+            <span class="mission-title">Make it</span>
+            <p class="mission-body">Open the Slides template. Name on Slide 1. Web image on Slide 2. Camera photo on Slide 3.</p>
+            <span class="mission-time">⏱ 5 min</span>
+          </div>
+          <div class="mission-card reveal d5">
+            <span class="mission-stars">★★ Mission 3</span>
+            <span class="mission-title">Share it</span>
+            <p class="mission-body">Open Google Meet. Copy your Slides link. Paste it in the chatbox. Share your screen.</p>
+            <span class="mission-time">⏱ 2 min</span>
+          </div>
+          <div class="mission-card reveal d6">
+            <span class="mission-stars">★★★ Mission 4</span>
+            <span class="mission-title">Solve it</span>
+            <p class="mission-body">A classmate's screen has frozen. Using <strong style="color: var(--pill-violet);">Think, Try, Ask</strong>, describe 3 things they could try.</p>
+            <span class="mission-time">⏱ 2 min</span>
+          </div>
+        </div>
+
+        <div class="callout reveal d7">
+          ⏱ <strong>Total time: 12 minutes.</strong>  Work independently. Your partner is your backup, not your shortcut!
+        </div>
+      </div>
+      <div class="card-pills">
+        <div class="cp-pill s pink"></div>
+        <div class="cp-pill m sage"></div>
+        <div class="cp-pill l violet"></div>
+        <div class="cp-pill s lavender"></div>
+      </div>
+    </div>
+  </section>
+
+</div><!-- /slides-container -->
+
+<script>
+/* ============================================================
+   SLIDE PRESENTATION CONTROLLER
+   ============================================================ */
+class SlidePresentation {
+  constructor() {
+    this.slides = Array.from(document.querySelectorAll('.slide'));
+    this.total = this.slides.length;
+    this.current = 0;
+    this.navDotsContainer = document.getElementById('navDots');
+    this.progressFill = document.getElementById('progressFill');
+    this.slideCounter = document.getElementById('slideCounter');
+    this.buildNavDots();
+    this.update();
+    this.bindKeyboard();
+    this.bindWheel();
+    this.bindTouch();
+  }
+  buildNavDots() {
+    this.navDotsContainer.innerHTML = '';
+    this.slides.forEach((_, i) => {
+      const btn = document.createElement('button');
+      btn.setAttribute('aria-label', `Go to slide ${i + 1}`);
+      btn.addEventListener('click', () => this.goTo(i));
+      this.navDotsContainer.appendChild(btn);
+    });
+  }
+  goTo(i) {
+    if (i < 0 || i >= this.total || i === this.current) return;
+    this.slides[this.current].classList.remove('active');
+    this.current = i;
+    this.slides[this.current].classList.add('active');
+    this.update();
+  }
+  next() { this.goTo(this.current + 1); }
+  prev() { this.goTo(this.current - 1); }
+  update() {
+    this.progressFill.style.width = ((this.current + 1) / this.total * 100) + '%';
+    this.slideCounter.textContent = `${this.current + 1} / ${this.total}`;
+    Array.from(this.navDotsContainer.children).forEach((dot, i) => {
+      dot.classList.toggle('active', i === this.current);
+    });
+  }
+  bindKeyboard() {
+    const NEXT = ['ArrowRight', 'ArrowDown', 'PageDown', ' '];
+    const PREV = ['ArrowLeft', 'ArrowUp', 'PageUp'];
+    document.addEventListener('keydown', (e) => {
+      if (e.target.isContentEditable || ['INPUT','TEXTAREA'].includes(e.target.tagName)) return;
+      if (NEXT.includes(e.key)) { e.preventDefault(); this.next(); }
+      if (PREV.includes(e.key)) { e.preventDefault(); this.prev(); }
+      if (e.key === 'Home') { e.preventDefault(); this.goTo(0); }
+      if (e.key === 'End')  { e.preventDefault(); this.goTo(this.total - 1); }
+    });
+  }
+  bindWheel() {
+    let cooldown = false;
+    window.addEventListener('wheel', (e) => {
+      if (cooldown) return;
+      if (Math.abs(e.deltaY) < 30) return;
+      cooldown = true;
+      setTimeout(() => cooldown = false, 600);
+      if (e.deltaY > 0) this.next(); else this.prev();
+    }, { passive: true });
+  }
+  bindTouch() {
+    let startY = 0, startX = 0;
+    window.addEventListener('touchstart', (e) => {
+      startY = e.touches[0].clientY;
+      startX = e.touches[0].clientX;
+    }, { passive: true });
+    window.addEventListener('touchend', (e) => {
+      const dy = e.changedTouches[0].clientY - startY;
+      const dx = e.changedTouches[0].clientX - startX;
+      if (Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > 60) {
+        if (dy < 0) this.next(); else this.prev();
+      } else if (Math.abs(dx) > 60) {
+        if (dx < 0) this.next(); else this.prev();
+      }
+    }, { passive: true });
+  }
+}
+
+/* ============================================================
+   FONT SCALE CONTROLLER
+   ============================================================ */
+class FontScaleController {
+  constructor() {
+    this.STEP  = 0.1;
+    this.MIN   = 0.5;
+    this.MAX   = 2.0;
+    this.scale = parseFloat(localStorage.getItem('gc3_fontScale') || '1');
+    this.labelEl = document.getElementById('fontScaleLabel');
+    this.btnUp   = document.getElementById('fontScaleUp');
+    this.btnDown = document.getElementById('fontScaleDown');
+    this.btnUp.addEventListener('click',   () => this.increase());
+    this.btnDown.addEventListener('click', () => this.decrease());
+    document.addEventListener('keydown', (e) => {
+      if (!e.metaKey) return;
+      if (e.key === '.') { e.preventDefault(); this.increase(); }
+      if (e.key === ',') { e.preventDefault(); this.decrease(); }
+    });
+    this.apply();
+  }
+  increase() { this.setScale(this.scale + this.STEP); }
+  decrease() { this.setScale(this.scale - this.STEP); }
+  setScale(val) {
+    this.scale = Math.round(Math.max(this.MIN, Math.min(this.MAX, val)) * 10) / 10;
+    this.apply();
+    localStorage.setItem('gc3_fontScale', this.scale);
+  }
+  apply() {
+    document.documentElement.style.setProperty('--font-scale', this.scale);
+    this.labelEl.textContent = Math.round(this.scale * 100) + '%';
+    this.btnDown.disabled = this.scale <= this.MIN;
+    this.btnUp.disabled   = this.scale >= this.MAX;
+  }
+}
+
+/* ============================================================
+   FULLSCREEN CONTROLLER
+   ============================================================ */
+class FullscreenController {
+  constructor() {
+    this.btn = document.getElementById('fullscreenBtn');
+    this.btn.addEventListener('click', () => this.toggle());
+    document.addEventListener('keydown', (e) => {
+      if (e.metaKey && (e.key === 'f' || e.key === 'F')) {
+        e.preventDefault(); this.toggle(); return;
+      }
+      if ((e.key === 'f' || e.key === 'F') && !e.metaKey && !e.ctrlKey && !e.altKey) {
+        const t = e.target;
+        if (t.isContentEditable || ['INPUT','TEXTAREA'].includes(t.tagName)) return;
+        e.preventDefault(); this.toggle();
+      }
+    });
+    document.addEventListener('fullscreenchange', () => this.syncLabel());
+  }
+  toggle() {
+    if (document.fullscreenElement) document.exitFullscreen();
+    else document.documentElement.requestFullscreen().catch(() => {});
+  }
+  syncLabel() {
+    const isFs = !!document.fullscreenElement;
+    this.btn.setAttribute('aria-label', isFs ? 'Exit fullscreen' : 'Enter fullscreen');
+    this.btn.setAttribute('title',      isFs ? 'Exit fullscreen (⌘ F / Esc)' : 'Fullscreen (⌘ F)');
+  }
+}
+
+/* ============================================================
+   CURSOR EFFECTS — violet trail + click-and-drag ink
+   Color: pill-violet rgb(124, 106, 173) — high contrast on light theme
+   ============================================================ */
+class CursorEffects {
+  constructor() {
+    this.canDo =
+      matchMedia('(hover: hover) and (pointer: fine)').matches &&
+      !matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!this.canDo) return;
+    this.canvas = document.getElementById('cursorFx');
+    this.ctx    = this.canvas.getContext('2d');
+    this.accentRgba = (a) => `rgba(124, 106, 173, ${a})`;
+    this.trail   = [];
+    this.strokes = [];
+    this.current = null;
+    this.TRAIL_LIFE = 400;
+    this.INK_FADE   = 1500;
+    this.resize();
+    window.addEventListener('resize', () => this.resize());
+    this.bindEvents();
+    requestAnimationFrame(() => this.tick());
+  }
+  resize() {
+    const dpr = window.devicePixelRatio || 1;
+    this.canvas.width  = innerWidth  * dpr;
+    this.canvas.height = innerHeight * dpr;
+    this.canvas.style.width  = innerWidth  + 'px';
+    this.canvas.style.height = innerHeight + 'px';
+    this.ctx.setTransform(1, 0, 0, 1, 0, 0);
+    this.ctx.scale(dpr, dpr);
+  }
+  bindEvents() {
+    window.addEventListener('mousemove', (e) => {
+      this.trail.push({ x: e.clientX, y: e.clientY, t: performance.now() });
+      if (this.current) this.current.points.push({ x: e.clientX, y: e.clientY });
+    });
+    window.addEventListener('mousedown', (e) => {
+      if (e.button !== 0) return;
+      if (e.target.closest('button, a, [contenteditable], input, textarea, .nav-dots, .edit-toggle, .edit-hotzone')) return;
+      this.current = { points: [{ x: e.clientX, y: e.clientY }], done: false };
+      this.strokes.push(this.current);
+    });
+    const endStroke = () => {
+      if (this.current) {
+        this.current.done = true;
+        this.current.finishedAt = performance.now();
+        this.current = null;
+      }
+    };
+    window.addEventListener('mouseup', endStroke);
+    window.addEventListener('mouseleave', endStroke);
+  }
+  tick() {
+    const now = performance.now();
+    const ctx = this.ctx;
+    ctx.clearRect(0, 0, innerWidth, innerHeight);
+    this.trail = this.trail.filter(p => now - p.t < this.TRAIL_LIFE);
+    for (const p of this.trail) {
+      const age = (now - p.t) / this.TRAIL_LIFE;
+      const alpha = 1 - age;
+      const r = 7 * (1 - age * 0.35);
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
+      ctx.fillStyle = this.accentRgba(alpha * 0.6);
+      ctx.shadowBlur = 12;
+      ctx.shadowColor = this.accentRgba(0.8);
+      ctx.fill();
+    }
+    ctx.shadowBlur = 0;
+    for (let i = this.strokes.length - 1; i >= 0; i--) {
+      const s = this.strokes[i];
+      let alpha = 1;
+      if (s.done) {
+        const age = now - s.finishedAt;
+        if (age >= this.INK_FADE) { this.strokes.splice(i, 1); continue; }
+        alpha = 1 - age / this.INK_FADE;
+      }
+      if (s.points.length < 2) continue;
+      ctx.beginPath();
+      ctx.moveTo(s.points[0].x, s.points[0].y);
+      for (let j = 1; j < s.points.length; j++) ctx.lineTo(s.points[j].x, s.points[j].y);
+      ctx.strokeStyle = this.accentRgba(alpha);
+      ctx.lineWidth = 4;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.shadowBlur = 12;
+      ctx.shadowColor = this.accentRgba(alpha * 0.7);
+      ctx.stroke();
+    }
+    ctx.shadowBlur = 0;
+    requestAnimationFrame(() => this.tick());
+  }
+}
+
+/* ============================================================
+   INLINE EDITOR
+   ============================================================ */
+class InlineEditor {
+  constructor() {
+    this.isActive = false;
+    this.toggle   = document.getElementById('editToggle');
+    this.banner   = document.getElementById('editBanner');
+    this.hotzone  = document.querySelector('.edit-hotzone');
+    this.editableSelector = 'h1, h2, h3, p, li, span:not(.kbd):not(.kbd-label):not(.title-eyebrow):not(.eyebrow)';
+    this.toggle.addEventListener('click', () => this.toggleMode());
+    this.hotzone.addEventListener('click', () => this.toggleMode());
+    let hideT = null;
+    this.hotzone.addEventListener('mouseenter', () => {
+      clearTimeout(hideT);
+      this.toggle.classList.add('show');
+    });
+    this.hotzone.addEventListener('mouseleave', () => {
+      hideT = setTimeout(() => { if (!this.isActive) this.toggle.classList.remove('show'); }, 400);
+    });
+    this.toggle.addEventListener('mouseenter', () => clearTimeout(hideT));
+    this.toggle.addEventListener('mouseleave', () => {
+      hideT = setTimeout(() => { if (!this.isActive) this.toggle.classList.remove('show'); }, 400);
+    });
+    document.addEventListener('keydown', (e) => {
+      if ((e.key === 'e' || e.key === 'E') && !e.metaKey && !e.ctrlKey && !e.altKey) {
+        const t = e.target;
+        if (t.isContentEditable || ['INPUT','TEXTAREA'].includes(t.tagName)) return;
+        this.toggleMode();
+      }
+      if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+        e.preventDefault();
+        if (this.isActive) this.exportFile();
+      }
+    });
+  }
+  toggleMode() {
+    this.isActive = !this.isActive;
+    document.body.classList.toggle('edit-active', this.isActive);
+    this.toggle.classList.toggle('active', this.isActive);
+    this.banner.classList.toggle('active', this.isActive);
+    this.toggle.textContent = this.isActive ? '✓' : '✏️';
+    document.querySelectorAll(this.editableSelector).forEach(el => {
+      if (this.isActive) el.setAttribute('contenteditable', 'true');
+      else el.removeAttribute('contenteditable');
+    });
+  }
+  exportFile() {
+    const editable = Array.from(document.querySelectorAll('[contenteditable]'));
+    editable.forEach(el => el.removeAttribute('contenteditable'));
+    document.body.classList.remove('edit-active');
+    this.toggle.classList.remove('active', 'show');
+    this.banner.classList.remove('active');
+    const html = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+    document.body.classList.add('edit-active');
+    editable.forEach(el => el.setAttribute('contenteditable', 'true'));
+    this.toggle.classList.add('active');
+    this.banner.classList.add('active');
+    const blob = new Blob([html], { type: 'text/html' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'Google Classroom Lesson 3 - Grade 3+4.html';
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+}
+
+/* Boot */
+const fontScaleCtrl  = new FontScaleController();
+const fullscreenCtrl = new FullscreenController();
+const cursorFx       = new CursorEffects();
+const editor         = new InlineEditor();
+const presentation   = new SlidePresentation();
+</script>
+</body>
+</html>
