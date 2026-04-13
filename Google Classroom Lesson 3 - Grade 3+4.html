@@ -612,6 +612,83 @@ img, .image-container {
 }
 
 /* ============================================================
+   SPEAKER NOTES PANEL — toggle with N key
+   Hidden by default. Pinned bottom-center, slides up when active.
+   Reads notes from each slide's data-notes attribute.
+   ============================================================ */
+.speaker-notes-panel {
+  position: fixed;
+  bottom: clamp(0.8rem, 2vh, 1.5rem);
+  left: 50%;
+  transform: translateX(-50%) translateY(150%);
+  width: min(900px, 90vw);
+  max-height: 38vh;
+  z-index: 9000;
+  background: rgba(26, 26, 46, 0.97);
+  color: var(--card-bg);
+  padding: clamp(0.8rem, 1.5vw, 1.2rem) clamp(1rem, 2vw, 1.5rem);
+  border-radius: 12px;
+  box-shadow: 0 -10px 40px rgba(0,0,0,0.35);
+  border: 1px solid rgba(var(--pill-violet-rgb), 0.4);
+  font-size: var(--small-size);
+  line-height: 1.55;
+  overflow-y: auto;
+  transition: transform 0.35s var(--ease-out-expo);
+}
+.speaker-notes-panel.visible { transform: translateX(-50%) translateY(0); }
+.notes-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 0.55em;
+  padding-bottom: 0.45em;
+  border-bottom: 1px solid rgba(255,255,255,0.12);
+}
+.notes-label {
+  font-weight: 700;
+  font-size: var(--label-size);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--pill-pink);
+}
+.notes-counter {
+  font-size: var(--label-size);
+  opacity: 0.55;
+  letter-spacing: 0.08em;
+}
+.notes-body { color: var(--card-bg); }
+.notes-body strong { color: var(--pill-pink); }
+.notes-body em { color: var(--pill-mint); font-style: italic; }
+.notes-body .tag {
+  display: inline-block;
+  background: rgba(var(--pill-violet-rgb), 0.5);
+  color: var(--card-bg);
+  padding: 0.1em 0.5em;
+  border-radius: 4px;
+  font-size: 0.85em;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  margin-right: 0.4em;
+}
+.notes-body .tag.cfu { background: var(--pill-pink-deep); }
+.notes-body .tag.br  { background: var(--pill-sage); }
+.notes-hint {
+  position: fixed;
+  bottom: clamp(0.8rem, 2vh, 1.5rem);
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: var(--label-size);
+  color: var(--text-soft);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  z-index: 199;
+  background: var(--card-bg);
+  padding: 0.3em 0.8em;
+  border-radius: 999px;
+  border: 1px solid rgba(0,0,0,0.06);
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+/* ============================================================
    INLINE EDITING
    ============================================================ */
 .edit-hotzone {
@@ -703,12 +780,23 @@ body.edit-active [contenteditable="true"]:focus {
 <button class="edit-toggle" id="editToggle" title="Edit mode (E)">✏️</button>
 <div class="edit-banner" id="editBanner">Edit mode — click any text. ⌘S to save</div>
 
+<!-- Speaker notes panel (toggle: N key) -->
+<aside class="speaker-notes-panel" id="speakerNotes" aria-label="Speaker notes (press N to toggle)">
+  <div class="notes-header">
+    <span class="notes-label">📝 Speaker Notes</span>
+    <span class="notes-counter" id="notesCounter">Slide 1 / 10</span>
+  </div>
+  <div class="notes-body" id="notesBody">(no notes for this slide)</div>
+</aside>
+<div class="notes-hint" id="notesHint">Press N for speaker notes</div>
+
 <div class="slides-container" id="slidesContainer">
 
   <!-- ============================================================
        SLIDE 1: TITLE
        ============================================================ -->
-  <section class="slide title-slide active" data-slide="1" aria-label="Title slide">
+  <section class="slide title-slide active" data-slide="1" aria-label="Title slide"
+    data-notes="<strong>Opener (1 min).</strong> Greet the class, introduce today as the second 30-min Google Classroom lesson. Today's focus: Slides → Meet → Problem solving. <span class='tag br'>BR</span> Cold call: 'Who remembers what we did last lesson?' Wait 5s, take 2 hands.">
     <div class="card-shell">
       <div class="card-content">
         <span class="title-eyebrow reveal d1">Lesson 3 · Grade 3+4</span>
@@ -729,7 +817,8 @@ body.edit-active [contenteditable="true"]:focus {
   <!-- ============================================================
        SLIDE 2: WALT
        ============================================================ -->
-  <section class="slide" data-slide="2" aria-label="Learning intentions">
+  <section class="slide" data-slide="2" aria-label="Learning intentions"
+    data-notes="<strong>WALT (1 min).</strong> Read each intention aloud. Highlight the AC9 verbs in <em>bold + italic</em> — these tell us exactly what we'll be doing. <span class='tag cfu'>CFU</span> 'Tell your partner — what is the difference between <em>use</em> and <em>create</em>?' Pause 10s. Cold call 1 student.">
     <div class="card-shell">
       <div class="card-content">
         <span class="eyebrow reveal d1">WALT</span>
@@ -737,9 +826,9 @@ body.edit-active [contenteditable="true"]:focus {
         <div class="accent-line reveal d3"></div>
 
         <ul class="walt-list">
-          <li class="reveal d3">Edit text and <strong>add pictures</strong> to a Google Slides presentation in three different ways.</li>
-          <li class="reveal d4">Use <strong>Google Meet</strong> to share your screen and share links in the chatbox.</li>
-          <li class="reveal d5">Use <strong>Think, Try, Ask</strong> to solve common tech problems before asking for help.</li>
+          <li class="reveal d3">We are learning to <em><strong>use</strong></em> Google Slides to <em><strong>create</strong></em> content with text and pictures in three different ways.</li>
+          <li class="reveal d4">We are learning to <em><strong>use</strong></em> Google Meet to <em><strong>communicate</strong></em> with the class — sharing our screen and sharing links in the chatbox.</li>
+          <li class="reveal d5">We are learning to <em><strong>identify</strong></em> and <em><strong>describe</strong></em> how to solve common tech problems using "Think, Try, Ask".</li>
         </ul>
       </div>
       <div class="card-pills">
@@ -753,7 +842,8 @@ body.edit-active [contenteditable="true"]:focus {
   <!-- ============================================================
        SLIDE 3: SUCCESS CRITERIA
        ============================================================ -->
-  <section class="slide" data-slide="3" aria-label="Success criteria">
+  <section class="slide" data-slide="3" aria-label="Success criteria"
+    data-notes="<strong>Success Criteria (1 min).</strong> Read each tier. The AC9 verbs (<em>identify</em>, <em>use</em>, <em>create</em>, <em>communicate</em>, <em>describe</em>, <em>discuss</em>) tell us what success actually looks like. <span class='tag br'>BR</span> Turn &amp; Talk: 'Which star are you aiming for today, and why?' 30 seconds. Take 2-3 voices.">
     <div class="card-shell">
       <div class="card-content">
         <span class="eyebrow reveal d1">Success Criteria</span>
@@ -763,15 +853,15 @@ body.edit-active [contenteditable="true"]:focus {
         <div class="star-grid">
           <div class="star-card s1 reveal d3">
             <span class="star-label">★ Getting Started</span>
-            <p class="star-desc">I can open the Slides template from Classroom, add my name on Slide 1, and insert one image from the web.</p>
+            <p class="star-desc">I can <em><strong>identify</strong></em> the Slides template in Classroom and <em><strong>use</strong></em> it to <em><strong>create</strong></em> a slide with my name on it.</p>
           </div>
           <div class="star-card s2 reveal d4">
             <span class="star-label">★★ Levelling Up</span>
-            <p class="star-desc">I can insert images three different ways (web, device, camera) and share my screen on Google Meet.</p>
+            <p class="star-desc">I can <em><strong>use</strong></em> three different methods to add images and <em><strong>communicate</strong></em> with the class on Google Meet (share my screen, share a link in the chatbox).</p>
           </div>
           <div class="star-card s3 reveal d5">
             <span class="star-label">★★★ Going Further</span>
-            <p class="star-desc">I can solve a tech problem on my own using <strong>Think, Try, Ask</strong> before raising my hand for help.</p>
+            <p class="star-desc">I can <em><strong>describe</strong></em> the "Think, Try, Ask" steps and <em><strong>discuss</strong></em> with a partner what to try before asking for help.</p>
           </div>
         </div>
       </div>
@@ -787,7 +877,8 @@ body.edit-active [contenteditable="true"]:focus {
        SLIDE 4: EDITING GOOGLE SLIDES (I DO) — V6 slide 10
        Speaker note: I Do Part B - Step 1: Opening & editing Google Slides.
        ============================================================ -->
-  <section class="slide" data-slide="4" aria-label="Editing Google Slides">
+  <section class="slide" data-slide="4" aria-label="Editing Google Slides"
+    data-notes="<strong>I Do Part B - Step 1: Opening &amp; editing Google Slides (3 min).</strong> Model live: open the template from Classroom → click a text box → delete placeholder → type. Show font/colour change. Verbs in play: <em>use</em>, <em>create</em>. <span class='tag cfu'>CFU</span> 'Show me the toolbar button you click to change colour.' Tap-to-show on devices.">
     <div class="card-shell">
       <div class="card-content">
         <span class="ped-badge i-do reveal d1">I Do</span>
@@ -835,7 +926,8 @@ body.edit-active [contenteditable="true"]:focus {
        SLIDE 5: ADDING PICTURES 3 WAYS (I DO) — V6 slide 11
        Speaker note: Demonstrate each method live. CFU (Show Call): "Watch how I resize. Why the corner and not the side?"
        ============================================================ -->
-  <section class="slide" data-slide="5" aria-label="Adding pictures 3 ways">
+  <section class="slide" data-slide="5" aria-label="Adding pictures 3 ways"
+    data-notes="<strong>I Do Part B - Steps 2-4: Adding images three ways (3 min).</strong> Demonstrate each method LIVE — Web search → Upload → Camera. Verb in play: <em>use</em>. <span class='tag cfu'>CFU (Show Call)</span> 'Watch how I resize. Why do I drag the corner and not the side?' Wait 5s, cold call 1 student. <span class='tag br'>BR</span> Quick partner check: 'Which method would YOU use for a photo of your dog?'">
     <div class="card-shell">
       <div class="card-content">
         <span class="ped-badge i-do reveal d1">I Do</span>
@@ -880,7 +972,8 @@ body.edit-active [contenteditable="true"]:focus {
        Speaker note: We Do Part B (7 min). Timer on screen.
        CFU (Standardise the Format): "Hold your device up and show me Slide 2 with the inserted image."
        ============================================================ -->
-  <section class="slide" data-slide="6" aria-label="Your turn slides and images">
+  <section class="slide" data-slide="6" aria-label="Your turn slides and images"
+    data-notes="<strong>We Do Part B (7 min).</strong> Timer on screen. Students work through Steps 1-4 with partner support. Teacher circulates. Verbs in play: <em>use</em>, <em>create</em>. <span class='tag cfu'>CFU (Standardise the Format)</span> 'Hold your device up — show me Slide 2 with the inserted image.' Scan the room. <span class='tag br'>BR</span> Turn &amp; Talk on the prompt at the bottom — 30 seconds, then cold call 2 voices.">
     <div class="card-shell">
       <div class="card-content">
         <span class="ped-badge we-do reveal d1">We Do</span>
@@ -922,7 +1015,8 @@ body.edit-active [contenteditable="true"]:focus {
        SLIDE 7: SHARING SCREEN ON GOOGLE MEET (I DO) — V6 slide 13
        Speaker note: I Do Part C - Step 1: Screen sharing. Reassure: sharing only lets others SEE, not control.
        ============================================================ -->
-  <section class="slide" data-slide="7" aria-label="Sharing screen on Google Meet">
+  <section class="slide" data-slide="7" aria-label="Sharing screen on Google Meet"
+    data-notes="<strong>I Do Part C - Step 1: Screen sharing (2 min).</strong> Model live: 'Present now' button → 'A tab' vs 'Your entire screen' → show what students see → stop sharing. Verb in play: <em>communicate</em>. <strong>Reassure the class:</strong> sharing only lets others SEE your screen, not control it. <span class='tag cfu'>CFU</span> 'What's the difference between sharing a tab and sharing your entire screen? Tell your partner.'">
     <div class="card-shell">
       <div class="card-content">
         <span class="ped-badge i-do reveal d1">I Do</span>
@@ -972,7 +1066,8 @@ body.edit-active [contenteditable="true"]:focus {
        Speaker note: Demo type message, paste link. Model Ctrl+C / Ctrl+V.
        CFU (Call and Response): "Copy!" [Ctrl+C!] "Paste!" [Ctrl+V!] (TLAC #35)
        ============================================================ -->
-  <section class="slide" data-slide="8" aria-label="Using the chatbox and links">
+  <section class="slide" data-slide="8" aria-label="Using the chatbox and links"
+    data-notes="<strong>I Do Part C - Steps 2-4: Chatbox + links (2 min).</strong> Demo: type a message, paste a link. Model Ctrl+C / Ctrl+V slowly. Verbs in play: <em>use</em>, <em>communicate</em>. <span class='tag cfu'>CFU (Call &amp; Response — TLAC #35)</span> Whole class: Teacher 'Copy!' → Class 'Ctrl + C!' | Teacher 'Paste!' → Class 'Ctrl + V!' Run it 3 times — make it a chant.">
     <div class="card-shell">
       <div class="card-content">
         <span class="ped-badge i-do reveal d1">I Do</span>
@@ -1014,7 +1109,8 @@ body.edit-active [contenteditable="true"]:focus {
        Speaker note: Problem-solving framework. Teacher deliberately causes a "problem" and models Think, Try, Ask aloud.
        Building Ratio: partner discussion, then cold call.
        ============================================================ -->
-  <section class="slide" data-slide="9" aria-label="Think Try Ask">
+  <section class="slide" data-slide="9" aria-label="Think Try Ask"
+    data-notes="<strong>Problem-solving framework (2 min).</strong> Teacher deliberately causes a 'problem' (e.g. unplug the projector, hide a tab) and models Think → Try → Ask aloud. Verbs in play: <em>identify</em>, <em>describe</em>, <em>discuss</em>. <span class='tag br'>BR (Building Ratio through Questioning)</span> Pose the question at the bottom — partner discussion 30s → cold call 3 students with 'And what would YOU try?' Push for specific actions, not just 'ask the teacher'.">
     <div class="card-shell">
       <div class="card-content">
         <span class="ped-badge i-do reveal d1">I Do</span>
@@ -1057,7 +1153,8 @@ body.edit-active [contenteditable="true"]:focus {
        Speaker note: You Do (12 min). Students work independently with partner support.
        Teacher circulates with clipboard (TLAC #13).
        ============================================================ -->
-  <section class="slide" data-slide="10" aria-label="Mission Challenge">
+  <section class="slide" data-slide="10" aria-label="Mission Challenge"
+    data-notes="<strong>You Do (12 min).</strong> Students work independently with partner support. Verbs in play across missions: <em>identify</em> (M1), <em>create</em>/<em>use</em> (M2), <em>communicate</em> (M3), <em>describe</em>/<em>discuss</em> (M4). Teacher circulates with clipboard (TLAC #13 — Engineer Efficiency). <span class='tag cfu'>CFU</span> Tap-to-show at each mission gate. <span class='tag br'>BR</span> For Mission 4, ask the class 'Give me 3 things they could try' — collect from 3 different students before revealing the framework answer.">
     <div class="card-shell">
       <div class="card-content">
         <span class="ped-badge you-do reveal d1">You Do</span>
@@ -1416,12 +1513,61 @@ class InlineEditor {
   }
 }
 
+/* ============================================================
+   SPEAKER NOTES PANEL — toggle with N
+   Reads notes from each slide's data-notes attribute.
+   Updates whenever the slide changes.
+   ============================================================ */
+class SpeakerNotesPanel {
+  constructor(presentation) {
+    this.presentation = presentation;
+    this.visible = false;
+    this.panel    = document.getElementById('speakerNotes');
+    this.body     = document.getElementById('notesBody');
+    this.counter  = document.getElementById('notesCounter');
+    this.hint     = document.getElementById('notesHint');
+
+    document.addEventListener('keydown', (e) => {
+      if ((e.key === 'n' || e.key === 'N') && !e.metaKey && !e.ctrlKey && !e.altKey) {
+        const t = e.target;
+        if (t.isContentEditable || ['INPUT','TEXTAREA'].includes(t.tagName)) return;
+        e.preventDefault();
+        this.toggle();
+      }
+    });
+
+    /* Hook into the presentation's update so notes follow the active slide */
+    const orig = this.presentation.update.bind(this.presentation);
+    this.presentation.update = () => { orig(); this.refresh(); };
+
+    /* Hide the hint after first interaction */
+    setTimeout(() => { if (this.hint) this.hint.style.opacity = '0'; }, 6000);
+
+    this.refresh();
+  }
+
+  toggle() {
+    this.visible = !this.visible;
+    this.panel.classList.toggle('visible', this.visible);
+    if (this.hint) this.hint.style.display = this.visible ? 'none' : 'block';
+    this.refresh();
+  }
+
+  refresh() {
+    const slide = this.presentation.slides[this.presentation.current];
+    const notes = slide.dataset.notes || '<em style="color: rgba(255,255,255,0.45);">(no notes for this slide)</em>';
+    this.body.innerHTML = notes;
+    this.counter.textContent = `Slide ${this.presentation.current + 1} / ${this.presentation.total}`;
+  }
+}
+
 /* Boot */
 const fontScaleCtrl  = new FontScaleController();
 const fullscreenCtrl = new FullscreenController();
 const cursorFx       = new CursorEffects();
 const editor         = new InlineEditor();
 const presentation   = new SlidePresentation();
+const speakerNotes   = new SpeakerNotesPanel(presentation);
 </script>
 </body>
 </html>
