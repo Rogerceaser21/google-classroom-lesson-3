@@ -750,6 +750,41 @@ body.edit-active [contenteditable="true"]:focus {
   outline: 2px solid var(--pill-violet);
   background: rgba(var(--pill-violet-rgb), 0.08);
 }
+
+/* ============================================================
+   TEACHER CALLOUT TOGGLE — ⌘⇧H hides the pedagogy callouts
+   (Turn & Talks, CFUs, Call & Response, Teacher prompts)
+   Remaining content reflows via flex justify-content: center.
+   ============================================================ */
+body.hide-teacher [data-teacher-only="true"] { display: none; }
+.font-scale-ctrl .teacher-btn.off {
+  opacity: 0.4;
+  position: relative;
+}
+.font-scale-ctrl .teacher-btn.off::after {
+  content: '';
+  position: absolute;
+  inset: 15%;
+  border-top: 1.5px solid var(--pill-violet);
+  transform: rotate(45deg);
+  transform-origin: center;
+  top: 50%;
+  left: 10%;
+  right: 10%;
+  height: 1px;
+  pointer-events: none;
+}
+
+/* ============================================================
+   OVERFLOW GUARD — if content won't fit, hide images first.
+   JS sets .text-priority on any slide where measured content
+   exceeds its container height.
+   ============================================================ */
+.slide.text-priority .col:has(.slide-img) { display: none; }
+.slide.text-priority .slide-img { display: none; }
+.slide.text-priority .two-col {
+  grid-template-columns: 1fr;
+}
 </style>
 </head>
 <body>
@@ -773,6 +808,8 @@ body.edit-active [contenteditable="true"]:focus {
   <button id="fontScaleUp"   aria-label="Increase font size" title="Larger (⌘ .)">A+</button>
   <span class="ctrl-divider" aria-hidden="true"></span>
   <button id="fullscreenBtn" class="fs-btn" aria-label="Enter fullscreen" title="Fullscreen (⌘ F)">⛶</button>
+  <span class="ctrl-divider" aria-hidden="true"></span>
+  <button id="teacherBtn" class="fs-btn teacher-btn" aria-label="Toggle teacher callouts" title="Toggle CFUs / Turn & Talks (⌘⇧ H)">🎓</button>
 </div>
 
 <!-- Inline editing -->
@@ -911,7 +948,7 @@ body.edit-active [contenteditable="true"]:focus {
           </div>
         </div>
 
-        <div class="callout reveal d7">
+        <div class="callout reveal d7" data-teacher-only="true">
           💡 <strong>Teacher says:</strong> "You are going to create your own content on these slides today."
         </div>
       </div>
@@ -999,7 +1036,7 @@ body.edit-active [contenteditable="true"]:focus {
           </div>
         </div>
 
-        <div class="callout we-do reveal d7">
+        <div class="callout we-do reveal d7" data-teacher-only="true">
           🗣️ <strong>Turn &amp; Talk:</strong> Uploading vs web search — which would you use for a photo of your pet?
         </div>
       </div>
@@ -1093,7 +1130,7 @@ body.edit-active [contenteditable="true"]:focus {
           </div>
         </div>
 
-        <div class="callout reveal d6">
+        <div class="callout reveal d6" data-teacher-only="true">
           🎯 <strong>Call &amp; Response:</strong> Teacher says "Copy!" → Students say "Ctrl + C!"   |   Teacher says "Paste!" → Students say "Ctrl + V!"
         </div>
       </div>
@@ -1136,7 +1173,7 @@ body.edit-active [contenteditable="true"]:focus {
           </div>
         </div>
 
-        <div class="callout reveal d6">
+        <div class="callout reveal d6" data-teacher-only="true">
           🗣️ What would you do if your screen went blank during an online lesson? <strong>Discuss with your partner.</strong>
         </div>
       </div>
@@ -1561,13 +1598,88 @@ class SpeakerNotesPanel {
   }
 }
 
+/* ============================================================
+   TEACHER CALLOUT TOGGLE — ⌘⇧H
+   Hides every element with data-teacher-only="true" (CFUs,
+   Turn & Talks, Call & Response). Remaining content reflows.
+   State persists in localStorage.
+   ============================================================ */
+class TeacherToggle {
+  constructor() {
+    this.btn = document.getElementById('teacherBtn');
+    this.hidden = localStorage.getItem('gc3_hideTeacher') === '1';
+    this.btn.addEventListener('click', () => this.toggle());
+    document.addEventListener('keydown', (e) => {
+      /* ⌘⇧H (or Ctrl+Shift+H on non-Mac) */
+      if ((e.metaKey || e.ctrlKey) && e.shiftKey && (e.key === 'h' || e.key === 'H')) {
+        e.preventDefault();
+        this.toggle();
+      }
+    });
+    this.apply();
+  }
+  toggle() { this.hidden = !this.hidden; this.apply(); localStorage.setItem('gc3_hideTeacher', this.hidden ? '1' : '0'); }
+  apply() {
+    document.body.classList.toggle('hide-teacher', this.hidden);
+    this.btn.classList.toggle('off', this.hidden);
+    this.btn.setAttribute('aria-label', this.hidden ? 'Show teacher callouts' : 'Hide teacher callouts');
+  }
+}
+
+/* ============================================================
+   OVERFLOW GUARD — hide images when text content overflows
+   Checks each slide's content container on: slide change,
+   font-scale change, window resize. If content is taller
+   than its container, adds .text-priority — CSS drops the
+   image column and collapses two-col to single column.
+   ============================================================ */
+class OverflowGuard {
+  constructor(presentation) {
+    this.presentation = presentation;
+    this.check = this.check.bind(this);
+
+    window.addEventListener('resize', this.check);
+
+    /* Re-check whenever the active slide changes */
+    const orig = this.presentation.update.bind(this.presentation);
+    this.presentation.update = () => { orig(); requestAnimationFrame(this.check); };
+
+    /* Re-check when --font-scale (or any root style) changes */
+    new MutationObserver(() => requestAnimationFrame(this.check))
+      .observe(document.documentElement, { attributes: true, attributeFilter: ['style'] });
+
+    /* Initial check — wait for fonts/images to settle */
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(() => requestAnimationFrame(this.check));
+    }
+    window.addEventListener('load', () => requestAnimationFrame(this.check));
+    setTimeout(this.check, 400);
+  }
+
+  check() {
+    this.presentation.slides.forEach(slide => {
+      /* Reset first so we measure the "full" state (with image) */
+      slide.classList.remove('text-priority');
+      const content = slide.querySelector('.card-content');
+      if (!content) return;
+      /* 4px tolerance for subpixel rounding */
+      const isOverflowing = content.scrollHeight - content.clientHeight > 4;
+      if (isOverflowing) {
+        slide.classList.add('text-priority');
+      }
+    });
+  }
+}
+
 /* Boot */
 const fontScaleCtrl  = new FontScaleController();
 const fullscreenCtrl = new FullscreenController();
 const cursorFx       = new CursorEffects();
 const editor         = new InlineEditor();
+const teacherToggle  = new TeacherToggle();
 const presentation   = new SlidePresentation();
 const speakerNotes   = new SpeakerNotesPanel(presentation);
+const overflowGuard  = new OverflowGuard(presentation);
 </script>
 </body>
 </html>
