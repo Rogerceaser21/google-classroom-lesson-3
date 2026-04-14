@@ -776,14 +776,34 @@ body.hide-teacher [data-teacher-only="true"] { display: none; }
 }
 
 /* ============================================================
-   OVERFLOW GUARD — if content won't fit, hide images first.
-   JS sets .text-priority on any slide where measured content
-   exceeds its container height.
+   IMAGE HIDING — deterministic CSS rules (no JS measurement)
+   Images disappear when:
+   (1) viewport is narrow (two-col has already collapsed anyway)
+   (2) viewport is short (not enough vertical room)
+   (3) body has .scaled-up (JS adds this when --font-scale > 1.2)
+   (4) legacy .text-priority class on a slide (no longer set by JS
+       but kept so manual toggling still works)
    ============================================================ */
-.slide.text-priority .col:has(.slide-img) { display: none; }
-.slide.text-priority .slide-img { display: none; }
-.slide.text-priority .two-col {
-  grid-template-columns: 1fr;
+.slide.text-priority .col:has(.slide-img),
+.slide.text-priority .slide-img,
+body.scaled-up .slide .col:has(.slide-img),
+body.scaled-up .slide .slide-img {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .slide .col:has(.slide-img),
+  .slide .slide-img {
+    display: none;
+  }
+  .slide .two-col { grid-template-columns: 1fr; }
+}
+
+@media (max-height: 620px) {
+  .slide .col:has(.slide-img),
+  .slide .slide-img {
+    display: none;
+  }
 }
 </style>
 </head>
@@ -1355,6 +1375,8 @@ class FontScaleController {
     this.labelEl.textContent = Math.round(this.scale * 100) + '%';
     this.btnDown.disabled = this.scale <= this.MIN;
     this.btnUp.disabled   = this.scale >= this.MAX;
+    /* Hide images when font scale is bumped up — threshold 1.2 = 120% */
+    document.body.classList.toggle('scaled-up', this.scale > 1.2);
   }
 }
 
@@ -1626,107 +1648,10 @@ class TeacherToggle {
   }
 }
 
-/* ============================================================
-   OVERFLOW GUARD — hide images when content overflows the slide
-   Strategy: compare the LAST CHILD's bottom edge to the slide's
-   bottom edge (via getBoundingClientRect). This works regardless
-   of how flex/grid resolves container heights.
-   Triggers: resize, ResizeObserver, slide change, font-scale
-   mutation, image load, fonts ready, window load, + late re-check
-   after slide transitions settle.
-   ============================================================ */
-class OverflowGuard {
-  constructor(presentation) {
-    this.presentation = presentation;
-    this.pendingRaf = null;
-    this.requestCheck = this.requestCheck.bind(this);
-
-    /* Native resize event — defer via rAF so layout is done */
-    window.addEventListener('resize', this.requestCheck);
-
-    /* ResizeObserver catches fullscreen-enter/exit on browsers
-       that don't fire a classic resize event */
-    if (typeof ResizeObserver !== 'undefined') {
-      const ro = new ResizeObserver(this.requestCheck);
-      ro.observe(document.getElementById('slidesContainer'));
-      ro.observe(document.documentElement);
-    }
-
-    /* Font-scale changes mutate html's style attribute */
-    new MutationObserver(this.requestCheck)
-      .observe(document.documentElement, { attributes: true, attributeFilter: ['style'] });
-
-    /* Slide change: one immediate check + one late check after reveal animations */
-    const origUpdate = this.presentation.update.bind(this.presentation);
-    this.presentation.update = () => {
-      origUpdate();
-      this.requestCheck();
-      setTimeout(this.requestCheck, 900);
-    };
-
-    /* Re-check whenever any image finishes loading (or errors) */
-    this.presentation.slides.forEach(slide => {
-      slide.querySelectorAll('img').forEach(img => {
-        if (img.complete) return;
-        img.addEventListener('load',  this.requestCheck, { once: true });
-        img.addEventListener('error', this.requestCheck, { once: true });
-      });
-    });
-
-    /* Fonts loaded → layout may shift */
-    if (document.fonts && document.fonts.ready) {
-      document.fonts.ready.then(this.requestCheck);
-    }
-
-    /* Initial + fallback checks at staggered times */
-    window.addEventListener('load', this.requestCheck);
-    setTimeout(this.requestCheck, 300);
-    setTimeout(this.requestCheck, 1200);
-  }
-
-  /* Coalesce all triggers into one per animation frame */
-  requestCheck() {
-    if (this.pendingRaf) return;
-    this.pendingRaf = requestAnimationFrame(() => {
-      this.pendingRaf = null;
-      this.check();
-    });
-  }
-
-  check() {
-    this.presentation.slides.forEach(slide => {
-      /* Reset to "full" state (image visible) BEFORE measuring — reading
-         getBoundingClientRect() forces a synchronous layout, so the
-         measurement below reflects the with-image state. */
-      slide.classList.remove('text-priority');
-
-      const content = slide.querySelector('.card-content');
-      if (!content) return;
-
-      const slideRect = slide.getBoundingClientRect();
-      const slideBottom = slideRect.bottom - 8; /* 8px safety */
-
-      /* Scan EVERY visible descendant — find the one whose bottom edge
-         is deepest. Last-child-only missed cases where the "last" element
-         was display:none (teacher toggle off) or squeezed upward by
-         justify-content:center while earlier children overflowed below. */
-      let deepest = -Infinity;
-      const descendants = content.querySelectorAll('*');
-      for (const el of descendants) {
-        const cs = getComputedStyle(el);
-        if (cs.display === 'none' || cs.visibility === 'hidden') continue;
-        const r = el.getBoundingClientRect();
-        if (r.width === 0 && r.height === 0) continue;
-        if (r.bottom > deepest) deepest = r.bottom;
-      }
-      if (deepest === -Infinity) return;
-
-      if (deepest > slideBottom) {
-        slide.classList.add('text-priority');
-      }
-    });
-  }
-}
+/* OverflowGuard removed — image hiding is now pure CSS:
+   narrow viewport (max-width: 900px), short viewport (max-height: 620px),
+   or font scale > 1.2 (handled by FontScaleController). No JS timing
+   issues, no measurement bugs. */
 
 /* Boot */
 const fontScaleCtrl  = new FontScaleController();
@@ -1736,7 +1661,6 @@ const editor         = new InlineEditor();
 const teacherToggle  = new TeacherToggle();
 const presentation   = new SlidePresentation();
 const speakerNotes   = new SpeakerNotesPanel(presentation);
-const overflowGuard  = new OverflowGuard(presentation);
 </script>
 </body>
 </html>
