@@ -1627,44 +1627,91 @@ class TeacherToggle {
 }
 
 /* ============================================================
-   OVERFLOW GUARD — hide images when text content overflows
-   Checks each slide's content container on: slide change,
-   font-scale change, window resize. If content is taller
-   than its container, adds .text-priority — CSS drops the
-   image column and collapses two-col to single column.
+   OVERFLOW GUARD — hide images when content overflows the slide
+   Strategy: compare the LAST CHILD's bottom edge to the slide's
+   bottom edge (via getBoundingClientRect). This works regardless
+   of how flex/grid resolves container heights.
+   Triggers: resize, ResizeObserver, slide change, font-scale
+   mutation, image load, fonts ready, window load, + late re-check
+   after slide transitions settle.
    ============================================================ */
 class OverflowGuard {
   constructor(presentation) {
     this.presentation = presentation;
-    this.check = this.check.bind(this);
+    this.pendingRaf = null;
+    this.requestCheck = this.requestCheck.bind(this);
 
-    window.addEventListener('resize', this.check);
+    /* Native resize event — defer via rAF so layout is done */
+    window.addEventListener('resize', this.requestCheck);
 
-    /* Re-check whenever the active slide changes */
-    const orig = this.presentation.update.bind(this.presentation);
-    this.presentation.update = () => { orig(); requestAnimationFrame(this.check); };
+    /* ResizeObserver catches fullscreen-enter/exit on browsers
+       that don't fire a classic resize event */
+    if (typeof ResizeObserver !== 'undefined') {
+      const ro = new ResizeObserver(this.requestCheck);
+      ro.observe(document.getElementById('slidesContainer'));
+      ro.observe(document.documentElement);
+    }
 
-    /* Re-check when --font-scale (or any root style) changes */
-    new MutationObserver(() => requestAnimationFrame(this.check))
+    /* Font-scale changes mutate html's style attribute */
+    new MutationObserver(this.requestCheck)
       .observe(document.documentElement, { attributes: true, attributeFilter: ['style'] });
 
-    /* Initial check — wait for fonts/images to settle */
+    /* Slide change: one immediate check + one late check after reveal animations */
+    const origUpdate = this.presentation.update.bind(this.presentation);
+    this.presentation.update = () => {
+      origUpdate();
+      this.requestCheck();
+      setTimeout(this.requestCheck, 900);
+    };
+
+    /* Re-check whenever any image finishes loading (or errors) */
+    this.presentation.slides.forEach(slide => {
+      slide.querySelectorAll('img').forEach(img => {
+        if (img.complete) return;
+        img.addEventListener('load',  this.requestCheck, { once: true });
+        img.addEventListener('error', this.requestCheck, { once: true });
+      });
+    });
+
+    /* Fonts loaded → layout may shift */
     if (document.fonts && document.fonts.ready) {
-      document.fonts.ready.then(() => requestAnimationFrame(this.check));
+      document.fonts.ready.then(this.requestCheck);
     }
-    window.addEventListener('load', () => requestAnimationFrame(this.check));
-    setTimeout(this.check, 400);
+
+    /* Initial + fallback checks at staggered times */
+    window.addEventListener('load', this.requestCheck);
+    setTimeout(this.requestCheck, 300);
+    setTimeout(this.requestCheck, 1200);
+  }
+
+  /* Coalesce all triggers into one per animation frame */
+  requestCheck() {
+    if (this.pendingRaf) return;
+    this.pendingRaf = requestAnimationFrame(() => {
+      this.pendingRaf = null;
+      this.check();
+    });
   }
 
   check() {
     this.presentation.slides.forEach(slide => {
-      /* Reset first so we measure the "full" state (with image) */
+      /* Reset to "full" state (image visible) BEFORE measuring — the
+         browser will synchronously re-layout when we read a rect below,
+         so the measurement reflects the with-image state. */
       slide.classList.remove('text-priority');
+
       const content = slide.querySelector('.card-content');
       if (!content) return;
-      /* 4px tolerance for subpixel rounding */
-      const isOverflowing = content.scrollHeight - content.clientHeight > 4;
-      if (isOverflowing) {
+      const lastChild = content.lastElementChild;
+      if (!lastChild) return;
+
+      const slideRect = slide.getBoundingClientRect();
+      const childRect = lastChild.getBoundingClientRect();
+
+      /* Overflow = last child's bottom edge extends past slide's bottom
+         (minus 8px safety margin for subpixel rounding / slide padding). */
+      const overflowPx = childRect.bottom - (slideRect.bottom - 8);
+      if (overflowPx > 0) {
         slide.classList.add('text-priority');
       }
     });
