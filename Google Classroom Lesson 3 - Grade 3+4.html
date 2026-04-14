@@ -1695,23 +1695,33 @@ class OverflowGuard {
 
   check() {
     this.presentation.slides.forEach(slide => {
-      /* Reset to "full" state (image visible) BEFORE measuring — the
-         browser will synchronously re-layout when we read a rect below,
-         so the measurement reflects the with-image state. */
+      /* Reset to "full" state (image visible) BEFORE measuring — reading
+         getBoundingClientRect() forces a synchronous layout, so the
+         measurement below reflects the with-image state. */
       slide.classList.remove('text-priority');
 
       const content = slide.querySelector('.card-content');
       if (!content) return;
-      const lastChild = content.lastElementChild;
-      if (!lastChild) return;
 
       const slideRect = slide.getBoundingClientRect();
-      const childRect = lastChild.getBoundingClientRect();
+      const slideBottom = slideRect.bottom - 8; /* 8px safety */
 
-      /* Overflow = last child's bottom edge extends past slide's bottom
-         (minus 8px safety margin for subpixel rounding / slide padding). */
-      const overflowPx = childRect.bottom - (slideRect.bottom - 8);
-      if (overflowPx > 0) {
+      /* Scan EVERY visible descendant — find the one whose bottom edge
+         is deepest. Last-child-only missed cases where the "last" element
+         was display:none (teacher toggle off) or squeezed upward by
+         justify-content:center while earlier children overflowed below. */
+      let deepest = -Infinity;
+      const descendants = content.querySelectorAll('*');
+      for (const el of descendants) {
+        const cs = getComputedStyle(el);
+        if (cs.display === 'none' || cs.visibility === 'hidden') continue;
+        const r = el.getBoundingClientRect();
+        if (r.width === 0 && r.height === 0) continue;
+        if (r.bottom > deepest) deepest = r.bottom;
+      }
+      if (deepest === -Infinity) return;
+
+      if (deepest > slideBottom) {
         slide.classList.add('text-priority');
       }
     });
